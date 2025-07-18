@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TaskManagerAPI</a> &gt; <a href="index.source.html" class="el_package">com.hilal.TaskManagerAPI.controller</a> &gt; <span class="el_source">TaskController.java</span></div><h1>TaskController.java</h1><pre class="source lang-java linenums">package com.hilal.TaskManagerAPI.controller;
+
+import com.hilal.TaskManagerAPI.dto.TaskRequestDto;
+import com.hilal.TaskManagerAPI.dto.TaskResponseDto;
+import com.hilal.TaskManagerAPI.dto.TaskUpdateDto;
+import com.hilal.TaskManagerAPI.enums.Priority;
+import com.hilal.TaskManagerAPI.enums.TaskStatus;
+import com.hilal.TaskManagerAPI.service.impl.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Tag(name = &quot;Task Management&quot;, description = &quot;APIs for managing tasks&quot;)
+@RestController
+@RequestMapping(&quot;/api&quot;)
+<span class="fc" id="L22">public class TaskController {</span>
+
+    @Autowired
+    private TaskService taskService;
+
+    @Operation(summary = &quot;Create a new task&quot;, description = &quot;Creates a new task with the provided details&quot;)
+    @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Task created successfully&quot;)
+    @PostMapping(&quot;/tasks&quot;)
+    public TaskResponseDto createTask(@RequestBody @Valid TaskRequestDto taskRequestDto) {
+<span class="fc" id="L31">        return taskService.createTask(taskRequestDto);</span>
+    }
+
+    @Operation(summary = &quot;Update an existing task&quot;, description = &quot;Updates the details of an existing task&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Task updated successfully&quot;)
+    @PatchMapping(&quot;/tasks/{taskId}&quot;)
+    public TaskResponseDto updateTask(@PathVariable Long taskId, @RequestBody TaskUpdateDto taskUpdateDto) {
+<span class="fc" id="L38">        return taskService.updateTask(taskId, taskUpdateDto);</span>
+    }
+
+    @Operation(summary = &quot;Delete a task&quot;, description = &quot;Deletes a task by its ID&quot;)
+    @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Task deleted successfully&quot;)
+    @DeleteMapping(&quot;/tasks/{taskId}&quot;)
+    public void deleteTask(@PathVariable Long taskId) {
+<span class="fc" id="L45">        taskService.deleteTask(taskId);</span>
+<span class="fc" id="L46">    }</span>
+
+    @Operation(summary = &quot;Get task by ID&quot;, description = &quot;Retrieves a task by its ID&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Task retrieved successfully&quot;)
+    @GetMapping(&quot;/tasks/{taskId}&quot;)
+    public TaskResponseDto getTaskById(@PathVariable Long taskId) {
+<span class="fc" id="L52">        return taskService.getTaskById(taskId);</span>
+    }
+
+    @Operation(summary = &quot;Get all tasks&quot;, description = &quot;Retrieves all tasks&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Tasks retrieved successfully&quot;)
+    @GetMapping(&quot;/tasks/all&quot;)
+    public List&lt;TaskResponseDto&gt; getAllTasks() {
+<span class="fc" id="L59">        return taskService.getAllTasks();</span>
+    }
+
+    @Operation(summary = &quot;Get tasks by status&quot;, description = &quot;Retrieves tasks filtered by their status&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Tasks retrieved successfully&quot;)
+    @GetMapping(&quot;/tasks/status/{status}&quot;)
+    public List&lt;TaskResponseDto&gt; getTasksByStatus(@PathVariable TaskStatus status) {
+<span class="fc" id="L66">        return taskService.getTasksByStatus(status);</span>
+    }
+
+    @Operation(summary = &quot;Get tasks by priority&quot;, description = &quot;Retrieves tasks filtered by their priority&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Tasks retrieved successfully&quot;)
+    @GetMapping(&quot;/tasks/priority/{priority}&quot;)
+    public List&lt;TaskResponseDto&gt; getTasksByPriority(@PathVariable Priority priority) {
+<span class="fc" id="L73">        return taskService.getTasksByPriority(priority);</span>
+    }
+
+    @Operation(summary = &quot;Get tasks by due date&quot;, description = &quot;Retrieves tasks filtered by their due date&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Tasks retrieved successfully&quot;)
+    @GetMapping(&quot;/tasks/dueDate/{dueDate}&quot;)
+    public List&lt;TaskResponseDto&gt; getTasksByDueDate(@PathVariable LocalDateTime dueDate) {
+<span class="fc" id="L80">        return taskService.getTasksByDueDate(dueDate);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

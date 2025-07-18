@@ -6,6 +6,7 @@ import com.hilal.TaskManagerAPI.dto.TaskUpdateDto;
 import com.hilal.TaskManagerAPI.entity.Task;
 import com.hilal.TaskManagerAPI.enums.Priority;
 import com.hilal.TaskManagerAPI.enums.TaskStatus;
+import com.hilal.TaskManagerAPI.exception.TaskNotFoundException;
 import com.hilal.TaskManagerAPI.repository.TaskRepository;
 import com.hilal.TaskManagerAPI.service.impl.TaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +48,7 @@ public class TaskServiceTest {
                 .description("This is an updated task description")
                 .priority(Priority.LOW)
                 .status(TaskStatus.COMPLETED)
+                .dueDate(LocalDateTime.now().plusDays(1))
                 .build();
     }
     // Add test methods here to test the TaskService methods
@@ -94,6 +96,39 @@ public class TaskServiceTest {
         assertEquals(TaskStatus.COMPLETED, response.getStatus());
     }
     @Test
+    void updateTask_shouldThrowExceptionWhenTaskNotFound() {
+        // Given
+        when(taskRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.updateTask(1L, taskUpdateDto));
+    }
+    @Test
+    void updateTask_shouldReturnSameTaskWhenInputIsNull(){
+        // Given
+        Task existingTask = Task.builder()
+                .id(1L)
+                .title("Old Task")
+                .description("This is an old task")
+                .priority(Priority.HIGH)
+                .status(TaskStatus.PENDING)
+                .dueDate(LocalDateTime.now())
+                .build();
+        when(taskRepository.findById(1L)).thenReturn(java.util.Optional.of(existingTask));
+        when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        TaskResponseDto response = taskService.updateTask(1L, new TaskUpdateDto());
+
+        // Then
+        assertNotNull(response);
+        assertEquals("Old Task", response.getTitle());
+        assertEquals("This is an old task", response.getDescription());
+        assertEquals(Priority.HIGH, response.getPriority());
+        assertEquals(TaskStatus.PENDING, response.getStatus());
+    }
+
+    @Test
     void deleteTask_shouldCallRepositoryDelete() {
         // Given
         Long taskId = 1L;
@@ -113,6 +148,17 @@ public class TaskServiceTest {
         // Then
         verify(taskRepository, times(1)).delete(existingTask);
     }
+
+    @Test
+    void deleteTask_shouldThrowExceptionWhenTaskNotFound() {
+        // Given
+        Long taskId = 1L;
+        when(taskRepository.findById(taskId)).thenReturn(java.util.Optional.empty());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.deleteTask(taskId));
+    }
+
     @Test
     void getTaskById_shouldReturnTaskResponseDto() {
         // Given
@@ -137,6 +183,17 @@ public class TaskServiceTest {
         assertEquals(Priority.HIGH, response.getPriority());
         assertEquals(TaskStatus.PENDING, response.getStatus());
     }
+
+    @Test
+    void getTaskById_shouldThrowExceptionWhenTaskNotFound() {
+        // Given
+        Long taskId = 1L;
+        when(taskRepository.findById(taskId)).thenReturn(java.util.Optional.empty());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.getTaskById(taskId));
+    }
+
     @Test
     void getAllTasks_shouldReturnListOfTaskResponseDto() {
         // Given
@@ -168,6 +225,15 @@ public class TaskServiceTest {
         assertEquals("Task 2", response.get(1).getTitle());
     }
     @Test
+    void getAllTasks_shouldThrowExceptionWhenNoTasksFound() {
+        // Given
+        when(taskRepository.findAll()).thenReturn(java.util.List.of());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.getAllTasks());
+    }
+
+    @Test
     void getTasksByStatus_shouldReturnListOfTaskResponseDto() {
         // Given
         Task task1 = Task.builder()
@@ -198,6 +264,15 @@ public class TaskServiceTest {
         assertEquals("Task 2", response.get(1).getTitle());
     }
     @Test
+    void getTasksByStatus_shouldThrowExceptionWhenNoTasksFound() {
+        // Given
+        when(taskRepository.findByStatus(TaskStatus.COMPLETED)).thenReturn(java.util.List.of());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.getTasksByStatus(TaskStatus.COMPLETED));
+    }
+
+    @Test
     void getTasksByPriority_shouldReturnListOfTaskResponseDto() {
         // Given
         Task task1 = Task.builder()
@@ -227,6 +302,15 @@ public class TaskServiceTest {
         assertEquals("Task 1", response.get(0).getTitle());
         assertEquals("Task 2", response.get(1).getTitle());
     }
+    @Test
+    void getTasksByPriority_shouldThrowExceptionWhenNoTasksFound() {
+        // Given
+        when(taskRepository.findByPriority(Priority.LOW)).thenReturn(java.util.List.of());
+
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.getTasksByPriority(Priority.LOW));
+    }
+
     @Test
     void getTasksByDueDate_shouldReturnListOfTaskResponseDto() {
         // Given
@@ -259,6 +343,14 @@ public class TaskServiceTest {
         assertEquals("Task 2", response.get(1).getTitle());
     }
 
+    @Test
+    void getTasksByDueDate_shouldThrowExceptionWhenNoTasksFound() {
+        // Given
+        LocalDateTime dueDate = LocalDateTime.now().plusDays(1);
+        when(taskRepository.findByDueDateBetween(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(java.util.List.of());
 
+        // When & Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.getTasksByDueDate(dueDate));
+    }
 
 }

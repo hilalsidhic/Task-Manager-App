@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TaskManagerAPI</a> &gt; <a href="index.source.html" class="el_package">com.hilal.TaskManagerAPI.service.impl</a> &gt; <span class="el_source">TaskService.java</span></div><h1>TaskService.java</h1><pre class="source lang-java linenums">package com.hilal.TaskManagerAPI.service.impl;
+
+import com.hilal.TaskManagerAPI.dto.TaskRequestDto;
+import com.hilal.TaskManagerAPI.dto.TaskResponseDto;
+import com.hilal.TaskManagerAPI.dto.TaskUpdateDto;
+import com.hilal.TaskManagerAPI.entity.Task;
+import com.hilal.TaskManagerAPI.enums.Priority;
+import com.hilal.TaskManagerAPI.enums.TaskStatus;
+import com.hilal.TaskManagerAPI.exception.TaskNotFoundException;
+import com.hilal.TaskManagerAPI.repository.TaskRepository;
+import com.hilal.TaskManagerAPI.service.TaskServiceInterface;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+<span class="fc" id="L20">public class TaskService implements TaskServiceInterface {</span>
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Override
+    public TaskResponseDto createTask(TaskRequestDto taskRequestDto) {
+<span class="fc" id="L27">        Task task = Task.builder()</span>
+<span class="fc" id="L28">                .title(taskRequestDto.getTitle())</span>
+<span class="fc" id="L29">                .description(taskRequestDto.getDescription())</span>
+<span class="fc" id="L30">                .priority(taskRequestDto.getPriority())</span>
+<span class="fc" id="L31">                .status(taskRequestDto.getStatus())</span>
+<span class="fc" id="L32">                .createdAt(LocalDateTime.now()) // Assuming createdAt is set to now</span>
+<span class="fc" id="L33">                .updatedAt(LocalDateTime.now()) // Assuming updatedAt is set to now</span>
+<span class="fc" id="L34">                .dueDate(taskRequestDto.getDueDate()) // Assuming due date is set to now for simplicity</span>
+<span class="fc" id="L35">                .build();</span>
+<span class="fc" id="L36">        Task savedTask = taskRepository.save(task);</span>
+<span class="fc" id="L37">        return TaskResponseDto.builder()</span>
+<span class="fc" id="L38">                .id(savedTask.getId())</span>
+<span class="fc" id="L39">                .title(savedTask.getTitle())</span>
+<span class="fc" id="L40">                .description(savedTask.getDescription())</span>
+<span class="fc" id="L41">                .priority(savedTask.getPriority())</span>
+<span class="fc" id="L42">                .status(savedTask.getStatus())</span>
+<span class="fc" id="L43">                .dueDate(savedTask.getDueDate())</span>
+<span class="fc" id="L44">                .build();</span>
+    }
+
+    @Override
+    public TaskResponseDto updateTask(Long taskId, TaskUpdateDto taskUpdateDto) {
+<span class="fc" id="L49">        Task existingTask = taskRepository.findById(taskId)</span>
+<span class="fc" id="L50">                .orElseThrow(() -&gt; new TaskNotFoundException(&quot;Task not found with id: &quot; + taskId));</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        if (taskUpdateDto.getTitle() != null) {</span>
+<span class="fc" id="L52">            existingTask.setTitle(taskUpdateDto.getTitle());</span>
+        }
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (taskUpdateDto.getDescription() != null) {</span>
+<span class="fc" id="L55">            existingTask.setDescription(taskUpdateDto.getDescription());</span>
+        }
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (taskUpdateDto.getPriority() != null) {</span>
+<span class="fc" id="L58">            existingTask.setPriority(taskUpdateDto.getPriority());</span>
+        }
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (taskUpdateDto.getStatus() != null) {</span>
+<span class="fc" id="L61">            existingTask.setStatus(taskUpdateDto.getStatus());</span>
+        }
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (taskUpdateDto.getDueDate() != null) {</span>
+<span class="fc" id="L64">            existingTask.setDueDate(taskUpdateDto.getDueDate());</span>
+        }
+<span class="fc" id="L66">        existingTask.setUpdatedAt(LocalDateTime.now()); // Update the updatedAt field</span>
+<span class="fc" id="L67">        Task updatedTask = taskRepository.save(existingTask);</span>
+<span class="fc" id="L68">        return TaskResponseDto.builder()</span>
+<span class="fc" id="L69">                .id(updatedTask.getId())</span>
+<span class="fc" id="L70">                .title(updatedTask.getTitle())</span>
+<span class="fc" id="L71">                .description(updatedTask.getDescription())</span>
+<span class="fc" id="L72">                .priority(updatedTask.getPriority())</span>
+<span class="fc" id="L73">                .status(updatedTask.getStatus())</span>
+<span class="fc" id="L74">                .dueDate(updatedTask.getDueDate())</span>
+<span class="fc" id="L75">                .build();</span>
+    }
+
+    @Override
+    public void deleteTask(Long taskId) {
+<span class="fc" id="L80">        Task existingTask = taskRepository.findById(taskId)</span>
+<span class="fc" id="L81">                .orElseThrow(() -&gt; new TaskNotFoundException(&quot;Task not found with id: &quot; + taskId));</span>
+<span class="fc" id="L82">        taskRepository.delete(existingTask);</span>
+<span class="fc" id="L83">    }</span>
+
+    @Override
+    public TaskResponseDto getTaskById(Long taskId) {
+<span class="fc" id="L87">        Task existingTask = taskRepository.findById(taskId)</span>
+<span class="fc" id="L88">                .orElseThrow(() -&gt; new TaskNotFoundException(&quot;Task not found with id: &quot; + taskId));</span>
+<span class="fc" id="L89">        return TaskResponseDto.builder()</span>
+<span class="fc" id="L90">                .id(existingTask.getId())</span>
+<span class="fc" id="L91">                .title(existingTask.getTitle())</span>
+<span class="fc" id="L92">                .description(existingTask.getDescription())</span>
+<span class="fc" id="L93">                .priority(existingTask.getPriority())</span>
+<span class="fc" id="L94">                .status(existingTask.getStatus())</span>
+<span class="fc" id="L95">                .dueDate(existingTask.getDueDate())</span>
+<span class="fc" id="L96">                .build();</span>
+    }
+
+    @Override
+    public List&lt;TaskResponseDto&gt; getAllTasks() {
+<span class="fc" id="L101">        List&lt;Task&gt; tasks = taskRepository.findAll();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (tasks.isEmpty()) {</span>
+<span class="fc" id="L103">            throw new TaskNotFoundException(&quot;No tasks found&quot;);</span>
+        }
+<span class="fc" id="L105">        return tasks.stream()</span>
+<span class="fc" id="L106">                .map(task -&gt; TaskResponseDto.builder()</span>
+<span class="fc" id="L107">                        .id(task.getId())</span>
+<span class="fc" id="L108">                        .title(task.getTitle())</span>
+<span class="fc" id="L109">                        .description(task.getDescription())</span>
+<span class="fc" id="L110">                        .priority(task.getPriority())</span>
+<span class="fc" id="L111">                        .status(task.getStatus())</span>
+<span class="fc" id="L112">                        .dueDate(task.getDueDate())</span>
+<span class="fc" id="L113">                        .build())</span>
+<span class="fc" id="L114">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;TaskResponseDto&gt; getTasksByStatus(TaskStatus status) {
+<span class="fc" id="L119">        List&lt;Task&gt; tasks = taskRepository.findByStatus(status);</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        if (tasks.isEmpty()) {</span>
+<span class="fc" id="L121">            throw new TaskNotFoundException(&quot;No tasks found with status: &quot; + status);</span>
+        }
+<span class="fc" id="L123">        return tasks.stream()</span>
+<span class="fc" id="L124">                .map(task -&gt; TaskResponseDto.builder()</span>
+<span class="fc" id="L125">                        .id(task.getId())</span>
+<span class="fc" id="L126">                        .title(task.getTitle())</span>
+<span class="fc" id="L127">                        .description(task.getDescription())</span>
+<span class="fc" id="L128">                        .priority(task.getPriority())</span>
+<span class="fc" id="L129">                        .status(task.getStatus())</span>
+<span class="fc" id="L130">                        .dueDate(task.getDueDate())</span>
+<span class="fc" id="L131">                        .build())</span>
+<span class="fc" id="L132">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;TaskResponseDto&gt; getTasksByPriority(Priority priority) {
+<span class="fc" id="L137">        List&lt;Task&gt; tasks = taskRepository.findByPriority(priority);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (tasks.isEmpty()) {</span>
+<span class="fc" id="L139">            throw new TaskNotFoundException(&quot;No tasks found with priority: &quot; + priority);</span>
+        }
+<span class="fc" id="L141">        return tasks.stream()</span>
+<span class="fc" id="L142">                .map(task -&gt; TaskResponseDto.builder()</span>
+<span class="fc" id="L143">                        .id(task.getId())</span>
+<span class="fc" id="L144">                        .title(task.getTitle())</span>
+<span class="fc" id="L145">                        .description(task.getDescription())</span>
+<span class="fc" id="L146">                        .priority(task.getPriority())</span>
+<span class="fc" id="L147">                        .status(task.getStatus())</span>
+<span class="fc" id="L148">                        .dueDate(task.getDueDate())</span>
+<span class="fc" id="L149">                        .build())</span>
+<span class="fc" id="L150">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;TaskResponseDto&gt; getTasksByDueDate(LocalDateTime dueDate) {
+<span class="fc" id="L155">        List&lt;Task&gt; tasks = taskRepository.findByDueDateBetween(LocalDateTime.now(),dueDate);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (tasks.isEmpty()) {</span>
+<span class="fc" id="L157">            throw new TaskNotFoundException(&quot;No tasks found with due date before: &quot; + dueDate);</span>
+        }
+<span class="fc" id="L159">        return tasks.stream()</span>
+<span class="fc" id="L160">                .map(task -&gt; TaskResponseDto.builder()</span>
+<span class="fc" id="L161">                        .id(task.getId())</span>
+<span class="fc" id="L162">                        .title(task.getTitle())</span>
+<span class="fc" id="L163">                        .description(task.getDescription())</span>
+<span class="fc" id="L164">                        .priority(task.getPriority())</span>
+<span class="fc" id="L165">                        .status(task.getStatus())</span>
+<span class="fc" id="L166">                        .dueDate(task.getDueDate())</span>
+<span class="fc" id="L167">                        .build())</span>
+<span class="fc" id="L168">                .collect(Collectors.toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

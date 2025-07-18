@@ -9,5 +9,9 @@ class TaskManagerApiApplicationTests {
 	@Test
 	void contextLoads() {
 	}
+	@Test
+	void testMainRunsWithoutException() {
+		TaskManagerApiApplication.main(new String[]{});
+	}
 
 }
